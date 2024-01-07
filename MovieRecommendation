@@ -1,0 +1,30 @@
+!pip install scikit-surprise
+
+import pandas as pd
+from surprise import Dataset, Reader
+from surprise import SVD, accuracy
+from surprise.model_selection import train_test_split
+
+# Load the movielens-100k dataset
+data = Dataset.load_builtin('ml-100k')
+
+# Define a reader with the scale of ratings
+reader = Reader(line_format='user item rating timestamp', sep='\t', rating_scale=(1, 5))
+
+# Load data from the dataset
+data = Dataset.load_from_file(data.ratings_file, reader=reader)
+
+# Split the dataset into the trainset and testset
+trainset, testset = train_test_split(data, test_size=.25)
+
+# Use the SVD algorithm for matrix factorization
+algo = SVD()
+
+# Train the algorithm on the trainset
+algo.fit(trainset)
+
+# Predict ratings for the testset
+predictions = algo.test(testset)
+
+# Calculate and print the RMSE
+accuracy.rmse(predictions)
