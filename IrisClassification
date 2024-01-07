@@ -1,0 +1,53 @@
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
+import tensorflow as tf
+
+# Load iris dataset
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define preprocessing steps
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', StandardScaler(), [0, 1, 2, 3])  # Standardizing numerical features
+    ])
+
+# Preprocess the data using the defined pipeline
+X_train_processed = preprocessor.fit_transform(X_train)
+X_test_processed = preprocessor.transform(X_test)
+
+# Create an SVM classifier
+svm_classifier = SVC(kernel='rbf', C=1.0, gamma='scale', probability=True)
+
+# Fit the classifier to the training data
+svm_classifier.fit(X_train_processed, y_train)
+
+# Evaluate the model
+accuracy = svm_classifier.score(X_test_processed, y_test)
+print(f"Accuracy of SVM classifier: {accuracy:.2f}")
+
+# Define a simple Neural Network model
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(4,)),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(3, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(X_train_processed, y_train, epochs=50, batch_size=32, validation_split=0.1)
+
+# Evaluate the model on test data
+test_loss, test_accuracy = model.evaluate(X_test_processed, y_test)
+print(f"Accuracy of Neural Network: {test_accuracy:.2f}")
+
